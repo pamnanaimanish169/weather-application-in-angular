@@ -173,17 +173,13 @@ The above copyright notice and this permission notice shall be included in all c
               <div class="card card-chart">
                 <div class="card-header card-header-success">
                   <div class="ct-chart" id="dailySalesChart">
-                    <canvas baseChart width="400" height="400"
-                      [datasets]="lineChartData"
-                      [labels]="lineChartLabels"
-                      [options]="lineChartOptions"
-                      [colors]="lineChartColors"
-                      [legend]="lineChartLegend"
-                      [chartType]="lineChartType"
-                      [plugins]="lineChartPlugins"
-                      (chartHover)="chartHovered($event)"
-                      (chartClick)="chartClicked($event)"
-                ></canvas>
+                    <canvas baseChart
+                          [datasets]="bubbleChartData"
+                          [options]="bubbleChartOptions"
+                          [colors]="bubbleChartColors"
+                          [legend]="bubbleChartLegend"
+                          [chartType]="bubbleChartType">
+                    </canvas>
                   </div>
                 </div>
                 <div class="card-body">
