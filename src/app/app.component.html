@@ -44,11 +44,11 @@ The above copyright notice and this permission notice shall be included in all c
             <span class="navbar-toggler-icon icon-bar"></span>
           </button>
           <div class="collapse navbar-collapse justify-content-end">
-            <form class="navbar-form">
+            <form class="navbar-form"  [formGroup]="searchForm">
               <div class="input-group no-border">
-                <input type="text" value="" class="form-control" placeholder="Search...">
+                <input type="text" value="" class="form-control" placeholder="Search..." formControlName="cityName">
                 <button type="submit" class="btn btn-white btn-round btn-just-icon">
-                  <i class="material-icons">search</i>
+                  <i class="material-icons" (click)="search()">search</i>
                   <div class="ripple-container"></div>
                 </button>
               </div>
@@ -173,13 +173,7 @@ The above copyright notice and this permission notice shall be included in all c
               <div class="card card-chart">
                 <div class="card-header card-header-success">
                   <div class="ct-chart" id="dailySalesChart">
-                    <canvas baseChart
-                          [datasets]="bubbleChartData"
-                          [options]="bubbleChartOptions"
-                          [colors]="bubbleChartColors"
-                          [legend]="bubbleChartLegend"
-                          [chartType]="bubbleChartType">
-                    </canvas>
+                    <canvas id="myChart" width="250" height="200"></canvas>
                   </div>
                 </div>
                 <div class="card-body">
@@ -198,14 +192,7 @@ The above copyright notice and this permission notice shall be included in all c
               <div class="card card-chart">
                 <div class="card-header card-header-warning">
                   <!-- <div class="ct-chart" id="websiteViewsChart"></div> -->
-                  <canvas baseChart
-                      [datasets]="barChartData"
-                      [labels]="barChartLabels"
-                      [options]="barChartOptions"
-                      [plugins]="barChartPlugins"
-                      [legend]="barChartLegend"
-                      [chartType]="barChartType">
-                  </canvas>
+                  <canvas id="myChart1" width="250" height="200"></canvas>
                 </div>
                 <div class="card-body">
                   <h4 class="card-title">Email Subscriptions</h4>
@@ -222,15 +209,7 @@ The above copyright notice and this permission notice shall be included in all c
               <div class="card card-chart">
                 <div class="card-header card-header-danger">
                   <div class="ct-chart" id="completedTasksChart">
-                    <canvas baseChart
-                        [data]="pieChartData"
-                        [labels]="pieChartLabels"
-                        [chartType]="pieChartType"
-                        [options]="pieChartOptions"
-                        [plugins]="pieChartPlugins"
-                        [colors]="pieChartColors"
-                        [legend]="pieChartLegend">
-                    </canvas>
+                    <canvas id="myChart2" width="250" height="200"></canvas>
                   </div>
                 </div>
                 <div class="card-body">
@@ -278,14 +257,7 @@ The above copyright notice and this permission notice shall be included in all c
       </footer>
     </div>
   </div>
-  <div class="fixed-plugin">
-    <div class="dropdown show-dropdown">
-      <a href="#" data-toggle="dropdown">
-        <i class="fa fa-cog fa-2x"> </i>
-      </a>
 
-    </div>
-  </div>
   <!--   Core JS Files   -->
   <script src="../assets/js/core/jquery.min.js"></script>
   <script src="../assets/js/core/popper.min.js"></script>
