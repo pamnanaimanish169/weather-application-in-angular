@@ -56,6 +56,11 @@ export class AppComponent implements OnInit {
   };
   hourlyData = [];
   dailyTemperatureInCelcius = [];
+  temp;
+  name;
+  weather;
+  feelsLike;
+  humidity;
 
   // ng2-charts for Humidity, Wind Speed, Max Spped
   public doughnutChartLabels: Label[] = ['Download Sales', 'In-Store Sales', 'Mail-Order Sales'];
@@ -66,19 +71,13 @@ export class AppComponent implements OnInit {
   ];
   public doughnutChartType: ChartType = 'doughnut';
 
-  // ng2-charts
-  // For Daily Temperature
   public lineChartData: ChartDataSets[] = [
-    // Labels of the Chart
   { data: [], label: 'Temperature'},
   ];
-  // X-Axis Chart Data
-  // Label of the Data Displayed on X-Axis
   public lineChartLabels: Label[] = [];
   public lineChartOptions: (ChartOptions & { annotation: any }) = {
     responsive: true,
     scales: {
-      // We use this empty structure as a placeholder for dynamic theming.
       xAxes: [{}],
       yAxes: [
         {
@@ -100,7 +99,6 @@ export class AppComponent implements OnInit {
     annotation: {
       annotations: [
         {
-          // Line Annotations
           type: 'line',
           mode: 'vertical',
           scaleID: 'x-axis-0',
@@ -110,7 +108,6 @@ export class AppComponent implements OnInit {
           label: {
             enabled: true,
             fontColor: 'orange',
-            // Vertical from X-Axis
             content: 'LineAnno'
           }
         },
@@ -118,8 +115,7 @@ export class AppComponent implements OnInit {
     },
   };
   public lineChartColors: Color[] = [
-    { // grey
-      // Chart 1 Color
+    {
       backgroundColor: 'rgba(148,159,177,0.2)',
       borderColor: 'rgba(148,159,177,1)',
       pointBackgroundColor: 'rgba(148,159,177,1)',
@@ -127,8 +123,7 @@ export class AppComponent implements OnInit {
       pointHoverBackgroundColor: '#fff',
       pointHoverBorderColor: 'rgba(148,159,177,0.8)'
     },
-    { // dark grey
-      // Chart Two Color
+    {
       backgroundColor: 'rgba(77,83,96,0.2)',
       borderColor: 'rgba(77,83,96,1)',
       pointBackgroundColor: 'rgba(77,83,96,1)',
@@ -136,8 +131,7 @@ export class AppComponent implements OnInit {
       pointHoverBackgroundColor: '#fff',
       pointHoverBorderColor: 'rgba(77,83,96,1)'
     },
-    { // red
-      // Chart Three Color
+    {
       backgroundColor: 'rgba(255,0,0,0.3)',
       borderColor: 'red',
       pointBackgroundColor: 'rgba(148,159,177,1)',
@@ -232,6 +226,15 @@ export class AppComponent implements OnInit {
     this.weatherService.getCurrentWeather(this.searchForm.controls['cityName'].value).subscribe(res => {
       this.result = res;
 
+
+      this.feelsLike = Math.round(this.result.main.feels_like - 273.15);
+      console.log( this.feelsLike );
+      this.weather = this.result.weather[0].main;
+      this.name = this.result.name;
+      this.temp = Math.round(this.result.main.temp - 273.15);
+      this.humidity = this.result.main.humidity;
+      console.log( this.humidity );
+
       this.sunrise = new Date(this.result.sys.sunrise * 1000).toUTCString().slice(17, 24);
       this.sunset = new Date(this.result.sys.sunset * 1000).toUTCString().slice(17, 24);
 
@@ -318,7 +321,6 @@ export class AppComponent implements OnInit {
           this.myDateInUTCArray.push(myDateInUTC);
         });
         for (let i =0; i < 4; i++) {
-          console.log( resposne.hourly[i + 4] );
           this.DailyTemperatureInCelciusHourly.push(Math.round(resposne.hourly[i + 4].temp - 273.15));
 
           const myDate2 = new Date(resposne.hourly[i + 4].dt * 1000);
@@ -350,9 +352,6 @@ export class AppComponent implements OnInit {
                 }
               }
         }
-        // console.log(this.lineChartLabels);
-        console.log(this.dailyTemperatureInCelcius);
-        console.log(this.myDateInUTCArray);
 
           // Chart 1
         this.canvas = document.getElementById('myChart');
@@ -376,7 +375,6 @@ export class AppComponent implements OnInit {
             responsive: false,
           }
         });
-        console.log(myChart);
 
     // Chart 2
         this.canvas1 = document.getElementById('myChart1');
@@ -405,22 +403,22 @@ export class AppComponent implements OnInit {
                 }] }
           },
         });
-        console.log(myChart1);
 
     // Chart 3
         this.canvas2 = document.getElementById('myChart2');
         this.ctx2 = this.canvas2.getContext('2d');
         let myChart2 = new Chart(this.ctx2, {
-          type: 'doughnut',
+          type: 'pie',
           data: {
             // The Legend displayed over Charts
-              labels: ['Max Wind'],
+              labels: ['Max Temp', 'Min Temp'],
               datasets: [{
-                  // label: '',
+                  label: '° C',
                   fill: false,
-                  data: [this.dataInOneCall.current.wind_speed, 100 - this.dataInOneCall.current.wind_speed],
+                  data: [this.todayMaxTem, this.todayMinTemp],
                   backgroundColor: [
                       'rgba(255, 99, 132, 1)',
+                      'rgba(50, 168, 82)'
                   ],
                   borderColor: "#ffbd35",
                   borderWidth: 1
@@ -438,16 +436,15 @@ export class AppComponent implements OnInit {
         },
           },
         });
-        console.log(myChart2);
       });
     });
   }
 
   public chartClicked({ event, active }: { event: MouseEvent, active: {}[] }): void {
-    console.log(event, active);
+    // console.log(event, active);
   }
 
   public chartHovered({ event, active }: { event: MouseEvent, active: {}[] }): void {
-    console.log(event, active);
+    // console.log(event, active);
   }
 }
