@@ -8,6 +8,7 @@ import { WeatherServiceService } from './weather-service.service';
 import * as WebFont from 'webfontloader';
 import { OwlOptions } from 'ngx-owl-carousel-o';
 import * as Chart from 'chart.js';
+import { element } from 'protractor';
 
 
 @Component({
@@ -54,6 +55,7 @@ export class AppComponent implements OnInit {
     weather: ''
   };
   hourlyData = [];
+  dailyTemperatureInCelcius = [];
 
   // ng2-charts for Humidity, Wind Speed, Max Spped
   public doughnutChartLabels: Label[] = ['Download Sales', 'In-Store Sales', 'Mail-Order Sales'];
@@ -289,7 +291,8 @@ export class AppComponent implements OnInit {
           // this.daySky =
           // https://www.epochconverter.com/programming/
           this.dailyResponse.push(element);
-          this.maxDailyTemperatureInCelcius.push(Math.round(element.temp.max - 273.15));
+          this.dailyTemperatureInCelcius.push(Math.round(element.temp.max - 273.15));
+          this.maxDailyTemperatureInCelcius.push( Math.round(element.temp.max - 273.15) );
           this.minDailyTemperatureInCelcius.push(Math.round(element.temp.min - 273.15));
 
           this.maxTemp = Math.max(...this.maxDailyTemperatureInCelcius);
@@ -311,7 +314,7 @@ export class AppComponent implements OnInit {
           this.averageMinTemp = averageTotal / this.minDailyTemperatureInCelcius.length;
 
           const myDate = new Date(element.dt * 1000);
-          const myDateInUTC = myDate.toUTCString();
+          const myDateInUTC = myDate.toUTCString().slice(5, 12);
           this.myDateInUTCArray.push(myDateInUTC);
         });
         for (let i =0; i < 4; i++) {
@@ -347,25 +350,26 @@ export class AppComponent implements OnInit {
                 }
               }
         }
-        console.log(this.lineChartData);
+        // console.log(this.lineChartLabels);
+        console.log(this.dailyTemperatureInCelcius);
+        console.log(this.myDateInUTCArray);
+
           // Chart 1
         this.canvas = document.getElementById('myChart');
         this.ctx = this.canvas.getContext('2d');
         let myChart = new Chart(this.ctx, {
-          type: 'doughnut',
+          type: 'line',
           data: {
-              labels: ["Humidity"],
+              labels: this.lineChartLabels,
               datasets: [{
-                  label: '# of Votes',
-                  // data: ['% of Humiduty', 'Area Remained by subtracting humidity']
-                  // i.e data: [20, 80]
-                  data: [this.result.main.humidity, 100 - this.result.main.humidity],
+                  label: '° C',
+                  data: this.DailyTemperatureInCelciusHourly,
                   backgroundColor: [
                       'rgba(255, 99, 132, 1)',
                       '',
                       ''
                   ],
-                  borderWidth: 1
+                  borderWidth: 2
               }]
           },
           options: {
@@ -378,13 +382,13 @@ export class AppComponent implements OnInit {
         this.canvas1 = document.getElementById('myChart1');
         this.ctx1 = this.canvas1.getContext('2d');
         let myChart1 = new Chart(this.ctx1, {
-          type: 'doughnut',
+          type: 'line',
           data: {
-              labels: ['UV Index'],
+              labels: this.myDateInUTCArray,
               datasets: [{
-                  label: 'UV Index',
+                  label: '° C',
                   fill: false,
-                  data: [this.dataInOneCall.current.uvi, 100 - this.dataInOneCall.current.uvi],
+                  data: this.dailyTemperatureInCelcius,
                   backgroundColor: [
                       'rgba(255, 99, 132, 1)',
                       '',
