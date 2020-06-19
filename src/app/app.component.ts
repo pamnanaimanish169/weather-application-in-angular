@@ -61,6 +61,8 @@ export class AppComponent implements OnInit {
   weather;
   feelsLike;
   humidity;
+  city;
+  country;
 
   // ng2-charts for Humidity, Wind Speed, Max Spped
   public doughnutChartLabels: Label[] = ['Download Sales', 'In-Store Sales', 'Mail-Order Sales'];
@@ -224,23 +226,24 @@ export class AppComponent implements OnInit {
       navigator.geolocation.getCurrentPosition((position) => {
         const longitude = position.coords.longitude;
         const latitude = position.coords.latitude;
+        this.weatherService.getLocationUsingCoords(longitude, latitude).subscribe(res => {
+          this.city = res['address']['City'] ;
+          this.country = res['address']['CountryCode']
+        });
         this.weatherService.getCurrentWeatherByCoords(latitude, longitude).subscribe(res => {
-          console.log(res);
           this.result = res;
 
-
           this.feelsLike = Math.round(this.result.main.feels_like - 273.15);
-          console.log( this.feelsLike );
           this.weather = this.result.weather[0].main;
           this.name = this.result.name;
           this.temp = Math.round(this.result.main.temp - 273.15);
           this.humidity = this.result.main.humidity;
-          console.log( this.humidity );
           this.sunrise = new Date(this.result.sys.sunrise * 1000).toUTCString().slice(17, 24);
           this.sunset = new Date(this.result.sys.sunset * 1000).toUTCString().slice(17, 24);
           this.coords.lat =  this.result.coord.lat;
           this.coords.long = this.result.coord.lon;
           this.celciusTemprature = Math.round(this.result.main.temp - 273.15) ;
+
 
           // If it is day, then calculate climate(Mostly Sunny, Partly Cloudy, etc) according to it.
           if (this.partOfDay == 'Day') {
@@ -466,6 +469,11 @@ export class AppComponent implements OnInit {
 
       this.coords.lat =  this.result.coord.lat;
       this.coords.long = this.result.coord.lon;
+
+      this.weatherService.getLocationUsingCoords(this.coords.long, this.coords.lat).subscribe(res => {
+        this.city = res['address']['City'] ;
+        this.country = res['address']['CountryCode']
+      });
 
       this.celciusTemprature = Math.round(this.result.main.temp - 273.15) ;
 
