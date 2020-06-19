@@ -198,6 +198,9 @@ export class AppComponent implements OnInit {
       }
     });
 
+    // GET Current Location of the User
+    this.getLocation();
+
     const date = new Date();
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -214,6 +217,229 @@ export class AppComponent implements OnInit {
       this.partOfDay = 'Night';
     }
     this.createForm();
+  }
+
+  getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const longitude = position.coords.longitude;
+        const latitude = position.coords.latitude;
+        this.weatherService.getCurrentWeatherByCoords(latitude, longitude).subscribe(res => {
+          console.log(res);
+          this.result = res;
+
+
+          this.feelsLike = Math.round(this.result.main.feels_like - 273.15);
+          console.log( this.feelsLike );
+          this.weather = this.result.weather[0].main;
+          this.name = this.result.name;
+          this.temp = Math.round(this.result.main.temp - 273.15);
+          this.humidity = this.result.main.humidity;
+          console.log( this.humidity );
+          this.sunrise = new Date(this.result.sys.sunrise * 1000).toUTCString().slice(17, 24);
+          this.sunset = new Date(this.result.sys.sunset * 1000).toUTCString().slice(17, 24);
+          this.coords.lat =  this.result.coord.lat;
+          this.coords.long = this.result.coord.lon;
+          this.celciusTemprature = Math.round(this.result.main.temp - 273.15) ;
+
+          // If it is day, then calculate climate(Mostly Sunny, Partly Cloudy, etc) according to it.
+          if (this.partOfDay == 'Day') {
+          if ( this.result.clouds.all >= 0 && this.result.clouds.all <= 12.5 ) {
+            this.skyCondition = 'Sunny';
+          } else if ( this.result.clouds.all >= 12.5 && this.result.clouds.all <= 37.5  ) {
+            this.skyCondition = 'Mostly Sunny';
+          } else if ( this.result.clouds.all >= 37.5 && this.result.clouds.all <= 62.5 ) {
+            this.skyCondition = 'Partly Sunny';
+          } else if ( this.result.clouds.all >= 62.5 && this.result.clouds.all <= 87.5 ) {
+            this.skyCondition = 'Mostly Cloudy';
+          } else if ( this.result.clouds.all >= 87.5 && this.result.clouds.all <= 100 ) {
+            this.skyCondition = 'Cloudy';
+          }
+        }
+          // We Placed the getAllDataInOneCell Inside this API because if you place it outside the scope of the getAllDataInOneCall
+          // gets executed first and the coords variable doesn't have a value when it is been passed to weather.service.ts.
+          this.weatherService.getAllDataInOneCall(this.coords).subscribe(resposne => {
+            this.dataInOneCall = resposne;
+            this.uviIndex = resposne.daily[0].uvi;
+            this.windSpeed = resposne.daily[0].wind_speed;
+            // Max Temperature for Morning
+            if ( resposne.hourly[0].clouds >= 0 && resposne.hourly[0].clouds <= 12.5 ) {
+              this.daySky = 'Sunny';
+            } else if ( resposne.hourly[0].clouds >= 12.5 && resposne.hourly[0].clouds <= 37.5  ) {
+              this.daySky = 'Mostly Sunny';
+            } else if ( resposne.hourly[0].clouds >= 37.5 && resposne.hourly[0].clouds <= 62.5 ) {
+              this.daySky = 'Partly Sunny';
+            } else if ( resposne.hourly[0].clouds >= 62.5 && resposne.hourly[0].clouds <= 87.5 ) {
+              this.daySky = 'Mostly Cloudy';
+            } else if ( resposne.hourly[0].clouds >= 87.5 && resposne.hourly[0].clouds <= 100 ) {
+              this.daySky = 'Cloudy';
+            }
+
+            // Max Temperature for Night
+            if ( resposne.hourly[24].clouds >= 0 && resposne.hourly[24].clouds <= 12.5 ) {
+              this.nightSky = 'Sunny';
+            } else if ( resposne.hourly[24].clouds >= 12.5 && resposne.hourly[24].clouds <= 37.5  ) {
+              this.nightSky = 'Mostly Sunny';
+            } else if ( resposne.hourly[24].clouds >= 37.5 && resposne.hourly[24].clouds <= 62.5 ) {
+              this.nightSky = 'Partly Sunny';
+            } else if ( resposne.hourly[24].clouds >= 62.5 && resposne.hourly[24].clouds <= 87.5 ) {
+              this.nightSky = 'Mostly Cloudy';
+            } else if ( resposne.hourly[24].clouds >= 87.5 && resposne.hourly[24].clouds <= 100 ) {
+              this.nightSky = 'Cloudy';
+            }
+            resposne.daily.forEach((element, key) => {
+              this.todayMaxTem = Math.round(element.temp.max - 273.15);
+              this.todayMinTemp = Math.round(element.temp.min - 273.15);
+              // this.daySky =
+              // https://www.epochconverter.com/programming/
+              this.dailyResponse.push(element);
+              this.dailyTemperatureInCelcius.push(Math.round(element.temp.max - 273.15));
+              this.maxDailyTemperatureInCelcius.push( Math.round(element.temp.max - 273.15) );
+              this.minDailyTemperatureInCelcius.push(Math.round(element.temp.min - 273.15));
+
+              this.maxTemp = Math.max(...this.maxDailyTemperatureInCelcius);
+              this.minTemp = Math.min(...this.minDailyTemperatureInCelcius);
+
+              let total = 0;
+              // tslint:disable-next-line: prefer-for-of
+              for (let i = 0; i < this.maxDailyTemperatureInCelcius.length; i ++) {
+                total += this.maxDailyTemperatureInCelcius[i];
+              }
+              this.averageMaxTemp = total / this.maxDailyTemperatureInCelcius.length;
+
+              let averageTotal = 0;
+
+              // tslint:disable-next-line: prefer-for-of
+              for (let i = 0; i < this.minDailyTemperatureInCelcius.length; i ++) {
+                averageTotal += this.minDailyTemperatureInCelcius[i];
+              }
+              this.averageMinTemp = averageTotal / this.minDailyTemperatureInCelcius.length;
+              const myDate = new Date(element.dt * 1000);
+              const myDateInUTC = myDate.toUTCString().slice(5, 12);
+              this.myDateInUTCArray.push(myDateInUTC);
+            });
+            for (let i =0; i < 4; i++) {
+              this.DailyTemperatureInCelciusHourly.push(Math.round(resposne.hourly[i + 4].temp - 273.15));
+
+              const myDate2 = new Date(resposne.hourly[i + 4].dt * 1000);
+              const myDateInUTCHourly = myDate2.toUTCString();
+              this.myDateInUTCArrayHourly.push(myDateInUTCHourly);
+
+              this.lineChartData.forEach((element1, key) => {
+                element1.data.push(Math.round(resposne.hourly[i + 4].temp - 273.15));
+              });
+
+              this.lineChartLabels.push(myDateInUTCHourly.slice(17, 24));
+
+              if (this.partOfDay == 'Day') {
+                    if ( resposne.hourly[i + 4].clouds >= 0 && resposne.hourly[i + 4].clouds <= 12.5 ) {
+                      this.skyConditionHourly = 'Sunny';
+                      this.skyConditionHourlyArray.push(this.skyConditionHourly);
+                    } else if ( resposne.hourly[i + 4].clouds >= 12.5 && resposne.hourly[i + 4].clouds <= 37.5  ) {
+                      this.skyConditionHourly = 'Mostly Sunny';
+                      this.skyConditionHourlyArray.push(this.skyConditionHourly);
+                    } else if ( resposne.hourly[i + 4].clouds >= 37.5 && resposne.hourly[i + 4].clouds <= 62.5 ) {
+                      this.skyConditionHourly = 'Partly Sunny';
+                      this.skyConditionHourlyArray.push(this.skyConditionHourly);
+                    } else if ( resposne.hourly[i + 4].clouds >= 62.5 && resposne.hourly[i + 4].clouds <= 87.5 ) {
+                      this.skyConditionHourly = 'Mostly Cloudy';
+                      this.skyConditionHourlyArray.push(this.skyConditionHourly);
+                    } else if ( resposne.hourly[i + 4].clouds >= 87.5 && resposne.hourly[i + 4].clouds <= 100 ) {
+                      this.skyConditionHourly = 'Cloudy';
+                      this.skyConditionHourlyArray.push(this.skyConditionHourly);
+                    }
+                  }
+            }
+
+              // Chart 1
+            this.canvas = document.getElementById('myChart');
+            this.ctx = this.canvas.getContext('2d');
+            let myChart = new Chart(this.ctx, {
+              type: 'line',
+              data: {
+                  labels: this.lineChartLabels,
+                  datasets: [{
+                      label: '° C',
+                      data: this.DailyTemperatureInCelciusHourly,
+                      backgroundColor: [
+                          'rgba(255, 99, 132, 1)',
+                          '',
+                          ''
+                      ],
+                      borderWidth: 2
+                  }]
+              },
+              options: {
+                responsive: false,
+              }
+            });
+
+        // Chart 2
+            this.canvas1 = document.getElementById('myChart1');
+            this.ctx1 = this.canvas1.getContext('2d');
+            let myChart1 = new Chart(this.ctx1, {
+              type: 'line',
+              data: {
+                  labels: this.myDateInUTCArray,
+                  datasets: [{
+                      label: '° C',
+                      fill: false,
+                      data: this.dailyTemperatureInCelcius,
+                      backgroundColor: [
+                          'rgba(255, 99, 132, 1)',
+                          '',
+                          ''
+                      ],
+                      borderColor: "#ffbd35",
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                responsive: false,
+                scales: { yAxes: [{ display: false }],xAxes: [{
+                        display: false //this will remove all the x-axis grid lines
+                    }] }
+              },
+            });
+
+        // Chart 3
+            this.canvas2 = document.getElementById('myChart2');
+            this.ctx2 = this.canvas2.getContext('2d');
+            let myChart2 = new Chart(this.ctx2, {
+              type: 'pie',
+              data: {
+                // The Legend displayed over Charts
+                  labels: ['Max Temp', 'Min Temp'],
+                  datasets: [{
+                      label: '° C',
+                      fill: false,
+                      data: [this.todayMaxTem, this.todayMinTemp],
+                      backgroundColor: [
+                          'rgba(255, 99, 132, 1)',
+                          'rgba(50, 168, 82)'
+                      ],
+                      borderColor: "#ffbd35",
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                responsive: false,
+                scales: { yAxes: [{ display: false }],xAxes: [{
+                        display: false //this will remove all the x-axis grid lines
+                    }] },
+                elements: {
+                line: {
+                  tension: 0.000001
+                }
+            },
+              },
+            });
+          });
+        });
+      });
+    } else {
+      console.log('No Support for geolocation');
+    }
   }
 
   createForm() {

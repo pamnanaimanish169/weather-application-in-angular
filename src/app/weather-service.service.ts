@@ -18,6 +18,14 @@ export class WeatherServiceService {
       }));
   }
 
+  getCurrentWeatherByCoords(longitude, latitude) {
+    // tslint:disable-next-line: max-line-length
+    return this.httpClient.get<any>(this.apiUrl + `weather?lat=` + latitude + `&lon=` + longitude + `&appid=1057acc2bc4acacdc45b8d6e73683cb6`)
+      .pipe(map(res => {
+        return res;
+      }));
+  }
+
   getAllDataInOneCall(coords) {
     // tslint:disable-next-line: max-line-length
     return this.httpClient.get<any>(this.apiUrl + `onecall?lat=` + coords.lat + `&lon=` + coords.long + `&appid=1057acc2bc4acacdc45b8d6e73683cb6`)
