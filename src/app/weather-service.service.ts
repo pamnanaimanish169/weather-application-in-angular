@@ -14,7 +14,7 @@ export class WeatherServiceService {
   getLocationUsingCoords(long, lat) {
     // http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?f=pjson&featureTypes=&location=-117.205453,34.037988
     // tslint:disable-next-line: max-line-length
-    return this.httpClient.get<any>(`http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?f=pjson&featureTypes=&location=` + long + `,` + lat)
+    return this.httpClient.get<any>(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?f=pjson&featureTypes=&location=` + long + `,` + lat)
       .pipe(map(res => {
         return res;
       }));
